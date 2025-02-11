@@ -183,20 +183,27 @@ def calculate_face_brightness(normal, light_direction):
 def draw_cube_with_lighting(rotated_vertices, projected_vertices):
     """Draw the cube's edges with lighting."""
     light_direction = [0, 0, -1]  # Light coming from the front
-    normals = get_cube_normals(rotated_vertices)
-    edges_with_brightness = []
 
     for edge in cube_edges:
         start_idx, end_idx = edge
-        # Calculate the average normal of the two vertices
-        normal = [(rotated_vertices[start_idx][i] + rotated_vertices[end_idx][i]) / 2 for i in range(3)]
-        brightness = calculate_face_brightness(normal, light_direction)
-        edges_with_brightness.append((brightness, edge))
+        # Extract vertex coordinates from rotated_vertices
+        start_vertex = rotated_vertices[start_idx]
+        end_vertex = rotated_vertices[end_idx]
 
-    # Draw edges with brightness
-    for brightness, edge in edges_with_brightness:
-        start_idx, end_idx = edge
+        # Normalize the vertex coordinates
+        norm_start_vertex = [coord / CUBE_SIZE for coord in start_vertex]
+        norm_end_vertex = [coord / CUBE_SIZE for coord in end_vertex]
+
+        # Calculate the average normal of the two vertices
+        normal = [(norm_start_vertex[i] + norm_end_vertex[i]) / 2 for i in range(3)]
+
+        # Calculate brightness based on the normal and light direction
+        brightness = calculate_face_brightness(normal, light_direction)
+
+        # Apply brightness to GLASS_COLOR
         color = tuple(int(GLASS_COLOR[i] * brightness) for i in range(3))
+
+        # Draw the edge with the calculated color
         pygame.draw.line(screen, color, projected_vertices[start_idx], projected_vertices[end_idx], width=1)
 
 
@@ -210,15 +217,6 @@ cube_vertices_local = [
     [CUBE_SIZE / 2, -CUBE_SIZE / 2, CUBE_SIZE / 2],
     [CUBE_SIZE / 2, CUBE_SIZE / 2, CUBE_SIZE / 2],
     [-CUBE_SIZE / 2, CUBE_SIZE / 2, CUBE_SIZE / 2]
-]
-
-cube_normals_local = [
-    [0, 0, 1],  # Front face
-    [0, 0, -1],  # Back face
-    [-1, 0, 0],  # Left face
-    [1, 0, 0],  # Right face
-    [0, 1, 0],  # Top face
-    [0, -1, 0]  # Bottom face
 ]
 
 # Cube edges connecting vertices (pairs of indices from `cube_vertices_local`)
