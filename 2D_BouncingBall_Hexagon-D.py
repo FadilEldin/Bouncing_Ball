@@ -39,6 +39,8 @@ hexagon_angle = 0  # Initial rotation angle
 hexagon_angular_velocity = 0.5  # Slower rotation speed in degrees per frame
 hexagon_spin_direction = 1  # 1 for clockwise, -1 for counterclockwise
 spin_reverse_timer = 0  # Timer to reverse spin direction
+SPIN_DURATION_MIN = 300   # Spin in one direction between SPIN_DURATION_MIN_MS and SPIN_DURATION_MAZ_MS milliseconds
+SPIN_DURATION_MAX = 1200
 hexagon_wall_thickness = 5  # Thicker walls
 
 # Ball properties
@@ -47,6 +49,10 @@ ball_position = [WIDTH // 2, HEIGHT // 2]
 ball_velocity = [5, -10]  # Initial velocity
 gravity = 0.5
 friction = 0.99
+
+# Counters
+total_time_counter = 0  # Counter for total time elapsed
+direction_change_counter = 0  # Counter for time since last direction change
 
 # Function to draw a hexagon with thicker walls
 def draw_hexagon(surface, center, radius, angle, color, thickness):
@@ -132,21 +138,35 @@ def check_collision(ball_pos, ball_vel, hex_center, hex_radius, hex_angle):
             ball_pos[1] += overlap * normal_vector[1]
 
 # Function to display information
-def display_info(surface, hex_spin_direction, ball_vel, bounce_angle):
+def display_info(surface, hex_spin_direction, ball_vel, bounce_angle, total_time, direction_change_time):
     font = pygame.font.SysFont("Arial", 20)
     spin_text = f"Spin Direction: {'Clockwise' if hex_spin_direction == 1 else 'Counterclockwise'}"
     vel_text = f"Ball Velocity: ({ball_vel[0]:.2f}, {ball_vel[1]:.2f})"
     angle_text = f"Bounce Angle: {bounce_angle:.2f}°"
-    text_surface = font.render(spin_text, True, BLUE)
-    surface.blit(text_surface, (10, 10))
-    text_surface = font.render(vel_text, True, BLUE)
-    surface.blit(text_surface, (10, 30))
-    text_surface = font.render(angle_text, True, BLUE)
-    surface.blit(text_surface, (10, 50))
+    total_time_text = f"Total Time: {total_time:.2f} s"
+    direction_change_text = f"{direction_change_time:.1f} s"
 
+    # Combine spin direction and direction change time into one line
+    spin_and_direction_text = f"{spin_text} ({direction_change_text}) "
+
+    # Render the text surfaces
+    total_time_surface = font.render(total_time_text, True, BLUE)
+    spin_and_direction_surface = font.render(spin_and_direction_text, True, BLUE)
+    vel_surface = font.render(vel_text, True, BLUE)
+    angle_surface = font.render(angle_text, True, BLUE)
+
+    # Display the text on the screen
+    surface.blit(total_time_surface, (10, 10))
+    surface.blit(spin_and_direction_surface, (10, 30))
+    surface.blit(vel_surface, (10, 50))
+    surface.blit(angle_surface, (10, 70))
+
+
+# Main loop
 # Main loop
 clock = pygame.time.Clock()
 running = True
+spin_duration = random.randint(SPIN_DURATION_MIN, SPIN_DURATION_MAX)  # Generate a random duration once
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -161,9 +181,11 @@ while running:
 
     # Randomly reverse hexagon spin direction
     spin_reverse_timer += 1
-    if spin_reverse_timer > 200:  # Reverse every ~3 seconds (60 FPS * 3)
+    if spin_reverse_timer > spin_duration:  # Compare to the fixed random duration
         hexagon_spin_direction *= -1
         spin_reverse_timer = 0
+        direction_change_counter = 0  # Reset the direction change counter
+        spin_duration = random.randint(SPIN_DURATION_MIN, SPIN_DURATION_MAX)  # Generate a new random duration
 
     # Update ball position and velocity
     ball_velocity[1] += gravity  # Apply gravity
@@ -178,6 +200,10 @@ while running:
     # Check for collisions with hexagon walls
     check_collision(ball_position, ball_velocity, hexagon_center, hexagon_radius, hexagon_angle)
 
+    # Update counters
+    total_time_counter += clock.get_time() / 1000  # Convert milliseconds to seconds
+    direction_change_counter += clock.get_time() / 1000  # Convert milliseconds to seconds
+
     # Clear the screen
     screen.fill(WHITE)
 
@@ -189,14 +215,10 @@ while running:
 
     # Display information
     bounce_angle = math.degrees(math.atan2(ball_velocity[1], ball_velocity[0]))
-    display_info(screen, hexagon_spin_direction, ball_velocity, bounce_angle)
+    display_info(screen, hexagon_spin_direction, ball_velocity, bounce_angle, total_time_counter, direction_change_counter)
 
     # Update the display
     pygame.display.flip()
 
     # Cap the frame rate
     clock.tick(60)
-
-# Quit Pygame
-pygame.quit()
-sys.exit()

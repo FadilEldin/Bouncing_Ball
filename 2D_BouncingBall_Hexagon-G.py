@@ -59,6 +59,12 @@ ball_velocity = [random.uniform(-2, 2), random.uniform(-2, 2)]
 # Rotation direction
 rotation_direction = 1  # 1 for clockwise, -1 for counterclockwise
 last_direction_change = pygame.time.get_ticks()
+SPIN_DURATION_MIN_MS = 2000   # Spin in one direction between SPIN_DURATION_MIN_MS and SPIN_DURATION_MAZ_MS milliseconds
+SPIN_DURATION_MAX_MS = 10000
+
+# Counters
+total_time_counter = 0  # Total time elapsed in seconds
+direction_change_counter = 0  # Time since last direction change in seconds
 
 def rotate_point(point, center, angle):
     px, py = point
@@ -101,32 +107,8 @@ def reflect_ball(ball_velocity, normal):
     ball_velocity[1] -= 2 * dot_product * normal[1]
     ball_velocity[0] *= FRICTION
     ball_velocity[1] *= FRICTION
-# ----------------------------------------------------------------------
-def WRONG_keep_ball_inside(ball_pos, hex_points):
-    """
-    With this implementation the ball shows sometimes outside the edge line of the hexagon.
-    While DeepSeek corrects the def. Perplixity Pedal-Perplexity-2.py keeps this def
-    But it updates the collision detection in the main loop... for i in range(6): line 176
-    """
-    center_x, center_y = HEX_CENTER
-    dx = ball_pos[0] - center_x
-    dy = ball_pos[1] - center_y
-    dist = math.sqrt(dx**2 + dy**2)
-    if dist > HEX_RADIUS - BALL_RADIUS:
-        angle = math.atan2(dy, dx)
-        ball_pos[0] = center_x + (HEX_RADIUS - BALL_RADIUS) * math.cos(angle)
-        ball_pos[1] = center_y + (HEX_RADIUS - BALL_RADIUS) * math.sin(angle)
-# ---------
+
 def keep_ball_inside(ball_pos, hex_points):
-    """
-    Fixed by DeepSeek.  Which said:
-    The current implementation of keep_ball_inside only ensures that
-    the ball's center stays within the hexagon's radius,
-    but it doesn't account for the ball's radius when checking against the hexagon's edges.
-    Here’s how you can modify the keep_ball_inside function to ensure that the ball stays entirely within the hexagon:
-       Check the distance from the ball's center to each edge of the hexagon.
-       Adjust the ball's position if it is too close to an edge, considering the ball's radius.
-    """
     for i in range(6):
         start_point = hex_points[i]
         end_point = hex_points[(i + 1) % 6]
@@ -148,10 +130,12 @@ def keep_ball_inside(ball_pos, hex_points):
             # Move the ball's center away from the edge by the overlap distance
             ball_pos[0] += normal[0] * overlap
             ball_pos[1] += normal[1] * overlap
-# ---------------------------------------------------------------------
+
+# Main loop
 running = True
 hex_angle = 0
 bounce_angle = 0
+spin_duration = random.randint(SPIN_DURATION_MIN_MS, SPIN_DURATION_MAX_MS)  # Random duration for spin direction
 
 while running:
     screen.fill(BLACK)
@@ -160,17 +144,26 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    current_time = pygame.time.get_ticks()
-    if current_time - last_direction_change > random.randint(3000, 8000):
-        rotation_direction *= -1
-        last_direction_change = current_time
+    # Update counters
+    delta_time = clock.get_time() / 1000  # Time elapsed since last frame in seconds
+    total_time_counter += delta_time
+    direction_change_counter += delta_time
 
+    # Check if it's time to reverse the spin direction
+    if direction_change_counter * 1000 > spin_duration:  # Convert seconds to milliseconds
+        rotation_direction *= -1
+        direction_change_counter = 0  # Reset the direction change counter
+        spin_duration = random.randint(SPIN_DURATION_MIN_MS, SPIN_DURATION_MAX_MS)  # New random duration
+
+    # Update hexagon rotation
     hex_angle += HEX_ANGLE_SPEED * rotation_direction
     hex_points = get_hexagon_points(HEX_CENTER, HEX_RADIUS, hex_angle)
 
+    # Update ball position and velocity
     ball_velocity[1] += GRAVITY
     new_ball_pos = [ball_pos[0] + ball_velocity[0], ball_pos[1] + ball_velocity[1]]
 
+    # Check for collisions with hexagon walls
     for i in range(6):
         start_point = hex_points[i]
         end_point = hex_points[(i + 1) % 6]
@@ -193,19 +186,30 @@ while running:
     ball_pos = new_ball_pos
     keep_ball_inside(ball_pos, hex_points)
 
+    # Draw the ball
     pygame.draw.circle(screen, RED, (int(ball_pos[0]), int(ball_pos[1])), BALL_RADIUS)
 
+    # Display information
     rotation_text = f"Rotation: {'Clockwise' if rotation_direction == 1 else 'Counterclockwise'}"
-    velocity_text = f"Ball Velocity: {math.sqrt(ball_velocity[0]**2 + ball_velocity[1]**2):.2f}"
+    velocity_text = f"Ball Velocity: {math.sqrt(ball_velocity[0] ** 2 + ball_velocity[1] ** 2):.2f}"
     bounce_text = f"Bounce Angle: {bounce_angle:.2f}°"
+    total_time_text = f"Total Time: {total_time_counter:.2f} s"
+    direction_change_text = f"{direction_change_counter:.1f} s"
 
-    rotation_surface = font.render(rotation_text, True, YELLOW)
+    # Combine rotation and direction change into one line
+    rotation_and_direction_text = f" {rotation_text} ({direction_change_text})"
+
+    # Render the text surfaces
+    rotation_and_direction_surface = font.render(rotation_and_direction_text, True, YELLOW)
     velocity_surface = font.render(velocity_text, True, YELLOW)
     bounce_surface = font.render(bounce_text, True, YELLOW)
+    total_time_surface = font.render(total_time_text, True, YELLOW)
 
-    screen.blit(rotation_surface, (10, 10))
-    screen.blit(velocity_surface, (10, 40))
-    screen.blit(bounce_surface, (10, 70))
+    # Display the text on the screen
+    screen.blit(total_time_surface, (10, 10))
+    screen.blit(rotation_and_direction_surface, (10, 40))
+    screen.blit(velocity_surface, (10, 70))
+    screen.blit(bounce_surface, (10, 100))
 
     pygame.display.flip()
     clock.tick(FPS)

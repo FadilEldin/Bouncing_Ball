@@ -83,7 +83,8 @@ PROJECTION_CENTER_Y = HEIGHT // 2
 
 # Timer for controlling spin direction changes
 last_direction_change_time = pygame.time.get_ticks()
-SPIN_DURATION_MS = 5000  # Spin in one direction for at least 5 seconds
+SPIN_DURATION_MIN_MS = 2000   # Spin in one direction between SPIN_DURATION_MIN_MS and SPIN_DURATION_MAZ_MS milliseconds
+SPIN_DURATION_MAX_MS = 10000
 
 # Rotation directions (X=Pitch, Y=Yaw, Z=Roll)
 rotation_direction_x = random.choice([-1, 1])
@@ -278,9 +279,9 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Change rotation direction after SPIN_DURATION_MS has passed
+    # Change rotation direction after random SPIN_DURATION_MIN_MS
     current_time = pygame.time.get_ticks()
-    if current_time - last_direction_change_time > SPIN_DURATION_MS:
+    if current_time - last_direction_change_time > random.randint(SPIN_DURATION_MIN_MS, SPIN_DURATION_MAX_MS):
         rotation_direction_x *= -1
         rotation_direction_y *= -1
         rotation_direction_z *= -1
