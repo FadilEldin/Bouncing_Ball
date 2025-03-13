@@ -19,7 +19,7 @@ import random
 pygame.init()
 
 # Screen dimensions
-WIDTH, HEIGHT = 750, 600
+WIDTH, HEIGHT = 700, 520
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("DeepThink R1: Bouncing Ball in Spinning Hexagon")
 
@@ -150,10 +150,10 @@ def display_info(surface, hex_spin_direction, ball_vel, bounce_angle, total_time
     spin_and_direction_text = f"{spin_text} ({direction_change_text}) "
 
     # Render the text surfaces
-    total_time_surface = font.render(total_time_text, True, BLUE)
-    spin_and_direction_surface = font.render(spin_and_direction_text, True, BLUE)
-    vel_surface = font.render(vel_text, True, BLUE)
-    angle_surface = font.render(angle_text, True, BLUE)
+    total_time_surface = font.render(total_time_text, True, YELLOW)
+    spin_and_direction_surface = font.render(spin_and_direction_text, True, YELLOW)
+    vel_surface = font.render(vel_text, True, YELLOW)
+    angle_surface = font.render(angle_text, True, YELLOW)
 
     # Display the text on the screen
     surface.blit(total_time_surface, (10, 10))
@@ -205,10 +205,10 @@ while running:
     direction_change_counter += clock.get_time() / 1000  # Convert milliseconds to seconds
 
     # Clear the screen
-    screen.fill(WHITE)
+    screen.fill(BLACK)
 
     # Draw the hexagon with thicker walls
-    draw_hexagon(screen, hexagon_center, hexagon_radius, hexagon_angle, BLACK, hexagon_wall_thickness)
+    draw_hexagon(screen, hexagon_center, hexagon_radius, hexagon_angle, WHITE, hexagon_wall_thickness)
 
     # Draw the ball
     pygame.draw.circle(screen, BLUE, (int(ball_position[0]), int(ball_position[1])), ball_radius)

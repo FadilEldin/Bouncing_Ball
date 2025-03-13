@@ -17,9 +17,9 @@ import random
 pygame.init()
 
 # Screen dimensions
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 700, 520
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("G: 3D Spinning Glass Cube with Bouncing Ball")
+pygame.display.set_caption("GPT-4o:: 3D Spinning Glass Cube with Bouncing Ball")
 
 # Colors
 BLACK = (0, 0, 0)
@@ -36,7 +36,7 @@ clock = pygame.time.Clock()
 FPS = 60
 
 # Cube properties
-CUBE_SIZE = 300
+CUBE_SIZE = 280
 CUBE_CENTER = [WIDTH // 2, HEIGHT // 2]
 ROTATION_SPEED = math.radians(0.5)  # Speed of rotation in radians per frame
 

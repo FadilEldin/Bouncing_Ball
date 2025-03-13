@@ -20,7 +20,7 @@ import random
 pygame.init()
 
 # Screen dimensions
-WIDTH, HEIGHT = 750, 600
+WIDTH, HEIGHT = 700, 520
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("GPT-4o: Ball Bouncing Inside a Spinning Hexagon")
 
@@ -65,7 +65,7 @@ SPIN_DURATION_MAX_MS = 10000
 # Counters
 total_time_counter = 0  # Total time elapsed in seconds
 direction_change_counter = 0  # Time since last direction change in seconds
-
+# ---------------------------------------------------------------------------------------
 def rotate_point(point, center, angle):
     px, py = point
     cx, cy = center
@@ -75,7 +75,7 @@ def rotate_point(point, center, angle):
     x_new = px * c - py * s + cx
     y_new = px * s + py * c + cy
     return x_new, y_new
-
+# ---------------------------------------------------------------------------------------
 def get_hexagon_points(center, radius, angle):
     points = []
     for i in range(6):
@@ -84,7 +84,7 @@ def get_hexagon_points(center, radius, angle):
         y = center[1] + radius * math.sin(theta)
         points.append((x, y))
     return points
-
+# ---------------------------------------------------------------------------------------
 def distance(p1, p2):
     return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
@@ -97,17 +97,17 @@ def point_line_distance(point, line_start, line_end):
     C = x2 * y1 - x1 * y2
     dist = abs(A * px + B * py + C) / math.sqrt(A**2 + B**2)
     return dist
-
+# ---------------------------------------------------------------------------------------
 def is_near_corner(ball_pos, hex_points, threshold=20):
     return any(distance(ball_pos, point) < threshold for point in hex_points)
-
+# ---------------------------------------------------------------------------------------
 def reflect_ball(ball_velocity, normal):
     dot_product = ball_velocity[0] * normal[0] + ball_velocity[1] * normal[1]
     ball_velocity[0] -= 2 * dot_product * normal[0]
     ball_velocity[1] -= 2 * dot_product * normal[1]
     ball_velocity[0] *= FRICTION
     ball_velocity[1] *= FRICTION
-
+# ---------------------------------------------------------------------------------------
 def keep_ball_inside(ball_pos, hex_points):
     for i in range(6):
         start_point = hex_points[i]
@@ -200,10 +200,10 @@ while running:
     rotation_and_direction_text = f" {rotation_text} ({direction_change_text})"
 
     # Render the text surfaces
-    rotation_and_direction_surface = font.render(rotation_and_direction_text, True, YELLOW)
-    velocity_surface = font.render(velocity_text, True, YELLOW)
-    bounce_surface = font.render(bounce_text, True, YELLOW)
-    total_time_surface = font.render(total_time_text, True, YELLOW)
+    rotation_and_direction_surface = font.render(rotation_and_direction_text, True, ORANGE)
+    velocity_surface = font.render(velocity_text, True, ORANGE)
+    bounce_surface = font.render(bounce_text, True, ORANGE)
+    total_time_surface = font.render(total_time_text, True, ORANGE)
 
     # Display the text on the screen
     screen.blit(total_time_surface, (10, 10))
@@ -215,3 +215,4 @@ while running:
     clock.tick(FPS)
 
 pygame.quit()
+# ----------------------------- END ------------------------------------------------------
